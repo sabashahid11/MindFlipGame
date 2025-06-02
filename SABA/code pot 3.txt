@@ -1,0 +1,288 @@
+import java.io.*;
+import java.util.*;
+
+// Product Class
+class Product {
+    private String name;
+    private double price;
+    private int stock;
+
+    public Product(String name, double price, int stock) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void updateStock(int quantity) {
+        this.stock += quantity;
+    }
+
+    public boolean isAvailable(int quantity) {
+        return stock >= quantity;
+    }
+
+    public void deductStock(int quantity) {
+        if (quantity <= stock) {
+            stock -= quantity;
+        } else {
+            throw new IllegalArgumentException("Insufficient stock for product: " + name);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return name + ", Price: " + price + ", Stock: " + stock;
+    }
+}
+
+// Order Class
+class Order {
+    private int orderId;
+    private String customerName;
+    private List<Product> products;
+    private List<Integer> quantities;
+
+    public Order(int orderId, String customerName) {
+        this.orderId = orderId;
+        this.customerName = customerName;
+        this.products = new ArrayList<>();
+        this.quantities = new ArrayList<>();
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void placeOrder(Product product, int quantity) {
+        if (product.isAvailable(quantity)) {
+            products.add(product);
+            quantities.add(quantity);
+            product.deductStock(quantity);
+        } else {
+            throw new IllegalArgumentException("Product out of stock: " + product.getName());
+        }
+    }
+
+    public double calculateTotalPrice() {
+        double total = 0;
+        for (int i = 0; i < products.size(); i++) {
+            total += products.get(i).getPrice() * quantities.get(i);
+        }
+        return total;
+    }
+
+    public void cancelOrder() {
+        for (int i = 0; i < products.size(); i++) {
+            Product product = products.get(i);
+            int quantity = quantities.get(i);
+            product.updateStock(quantity);
+        }
+        products.clear();
+        quantities.clear();
+    }
+
+    public void generateInvoice() throws IOException {
+        String invoice = "Invoice for Order ID: " + orderId + "\n";
+        invoice += "Customer: " + customerName + "\n";
+        invoice += "Products:\n";
+
+        for (int i = 0; i < products.size(); i++) {
+            Product product = products.get(i);
+            int quantity = quantities.get(i);
+            invoice += " - " + product.getName() + " x " + quantity + " = " + (product.getPrice() * quantity) + "\n";
+        }
+
+        invoice += "Total: " + calculateTotalPrice() + "\n";
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("invoice_" + orderId + ".txt"))) {
+            writer.write(invoice);
+        }
+
+        System.out.println("Invoice generated: invoice_" + orderId + ".txt");
+    }
+}
+
+// Main Class
+public class OrderManagementSystem {
+    private static Map<String, Product> inventory = new HashMap<>();
+    private static Map<Integer, Order> orders = new HashMap<>();
+    private static int nextOrderId = 1;
+
+    public static void main(String[] args) {
+        initializeInventory();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.println("Are you:");
+                System.out.println("1. Customer\n2. Staff\n3. Exit");
+                System.out.print("Choose an option: ");
+                int userType = scanner.nextInt();
+
+                switch (userType) {
+                    case 1:
+                        handleCustomer(scanner);
+                        break;
+                    case 2:
+                        if (staffLogin(scanner)) {
+                            handleStaff(scanner);
+                        } else {
+                            System.out.println("Invalid login credentials.");
+                        }
+                        break;
+                    case 3:
+                        System.out.println("Exiting system. Goodbye!");
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Try again.");
+                }
+            }
+        }
+    }
+
+    private static void initializeInventory() {
+        inventory.put("Apple", new Product("Apple", 1.0, 50));
+        inventory.put("Banana", new Product("Banana", 0.5, 100));
+        inventory.put("Orange", new Product("Orange", 1.2, 30));
+    }
+
+    private static void handleCustomer(Scanner scanner) {
+        System.out.print("Enter customer name: ");
+        scanner.nextLine();  // Consume newline
+        String customerName = scanner.nextLine();
+        Order order = new Order(nextOrderId++, customerName);
+
+        while (true) {
+            System.out.print("Enter product name (or 'done' to finish): ");
+            String productName = scanner.nextLine();
+
+            if (productName.equalsIgnoreCase("done")) {
+                break;
+            }
+
+            Product product = inventory.get(productName);
+
+            if (product == null) {
+                System.out.println("Product not found.");
+                continue;
+            }
+
+            System.out.print("Enter quantity: ");
+            int quantity = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            try {
+                order.placeOrder(product, quantity);
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        orders.put(order.getOrderId(), order);
+
+        try {
+            order.generateInvoice();
+        } catch (IOException e) {
+            System.out.println("Error generating invoice: " + e.getMessage());
+        }
+    }
+
+    private static boolean staffLogin(Scanner scanner) {
+        System.out.print("Enter staff username: ");
+        scanner.nextLine(); // Consume newline
+        String username = scanner.nextLine();
+        System.out.print("Enter staff password: ");
+        String password = scanner.nextLine();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("staff_credentials.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] credentials = line.split(",");
+                if (credentials.length == 2 && credentials[0].equals(username) && credentials[1].equals(password)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading staff credentials file: " + e.getMessage());
+        }
+
+        return false;
+    }
+
+    private static void handleStaff(Scanner scanner) {
+        while (true) {
+            System.out.println("Staff Options:");
+            System.out.println("1. View Inventory\n2. Update Inventory\n3. View Orders\n4. Exit Staff Menu");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    viewInventory();
+                    break;
+                case 2:
+                    updateInventory(scanner);
+                    break;
+                case 3:
+                    viewOrders();
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Try again.");
+            }
+        }
+    }
+
+    private static void viewInventory() {
+        System.out.println("Inventory:");
+        for (Product product : inventory.values()) {
+            System.out.println(product);
+        }
+    }
+
+    private static void updateInventory(Scanner scanner) {
+        System.out.print("Enter product name to update: ");
+        scanner.nextLine(); // Consume newline
+        String productName = scanner.nextLine();
+        Product product = inventory.get(productName);
+
+        if (product == null) {
+            System.out.println("Product not found.");
+            return;
+        }
+
+        System.out.print("Enter quantity to add: ");
+        int quantity = scanner.nextInt();
+        product.updateStock(quantity);
+        System.out.println("Stock updated for product: " + product.getName());
+    }
+
+    private static void viewOrders() {
+        if (orders.isEmpty()) {
+            System.out.println("No orders placed yet.");
+            return;
+        }
+
+        for (Order order : orders.values()) {
+            System.out.println("Order ID: " + order.getOrderId() + ", Customer: " + order.getCustomerName());
+        }
+    }
+}
+
+
+

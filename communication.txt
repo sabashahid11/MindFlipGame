@@ -1,0 +1,131 @@
+#include <iostream>
+using namespace std;
+
+class Node {
+public:
+    string action;
+    Node* next;
+    Node(string act) {
+        action = act;
+        next = nullptr;
+    }
+};
+
+class UndoRedo {
+private:
+    Node* undoTop;
+    Node* redoTop;
+    int undoCount, redoCount;
+
+public:
+    UndoRedo() {
+        undoTop = nullptr;
+        redoTop = nullptr;
+        undoCount = 0;
+        redoCount = 0;
+    }
+
+    // Insert action into Undo Stack
+    void pushUndo(string action) {
+        Node* newNode = new Node(action);
+        newNode->next = undoTop;
+        undoTop = newNode;
+        undoCount++;
+    }
+
+    // Undo last action
+    void undo() {
+        if (undoTop == nullptr) {
+            cout << "Undo Stack is empty!\n";
+            return;
+        }
+        string action = undoTop->action;
+        Node* temp = undoTop;
+        undoTop = undoTop->next;
+        delete temp;
+
+        // Push to Redo Stack
+        Node* redoNode = new Node(action);
+        redoNode->next = redoTop;
+        redoTop = redoNode;
+
+        redoCount++;
+        cout << "Undo: " << action << endl;
+    }
+
+    // Redo last undone action
+    void redo() {
+        if (redoTop == nullptr) {
+            cout << "Redo Stack is empty!\n";
+            return;
+        }
+        string action = redoTop->action;
+        Node* temp = redoTop;
+        redoTop = redoTop->next;
+        delete temp;
+
+        // Push back to Undo Stack
+        Node* undoNode = new Node(action);
+        undoNode->next = undoTop;
+        undoTop = undoNode;
+
+        cout << "Redo: " << action << endl;
+    }
+
+    // Display Undo and Redo stacks
+    void displayStacks() {
+        cout << "Undo Stack: ";
+        Node* temp = undoTop;
+        while (temp) {
+            cout << temp->action << " -> ";
+            temp = temp->next;
+        }
+        cout << "NULL\n";
+
+        cout << "Redo Stack: ";
+        temp = redoTop;
+        while (temp) {
+            cout << temp->action << " -> ";
+            temp = temp->next;
+        }
+        cout << "NULL\n";
+    }
+
+    // Display total actions performed
+    void countActions() {
+        cout << "Total Undo Operations: " << undoCount << endl;
+        cout << "Total Redo Operations: " << redoCount << endl;
+    }
+};
+
+int main() {
+    UndoRedo editor;
+
+    // Simulating 5 actions
+    editor.pushUndo("Typed Hello");
+    editor.pushUndo("Bolded Text");
+    editor.pushUndo("Italicized Text");
+    editor.pushUndo("Deleted a Word");
+    editor.pushUndo("Added a New Line");
+
+    editor.displayStacks();
+
+    // Performing 5 undo operations
+    cout << "\nPerforming Undo Operations:\n";
+    for (int i = 0; i < 5; i++) {
+        editor.undo();
+    }
+
+    editor.displayStacks();
+
+    // Performing 5 redo operations
+    cout << "\nPerforming Redo Operations:\n";
+    for (int i = 0; i < 5; i++) {
+        editor.redo();
+    }
+
+    editor.displayStacks();
+    editor.countActions();
+
+    return 0;
+}

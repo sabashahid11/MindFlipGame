@@ -1,0 +1,264 @@
+ FIRST ONE
+
+
+import java.util.ArrayList;
+
+
+class Course{
+    // protected rakhein ge so the attributes can only be accessed by course class
+// and inheriting classes
+    protected String courseName;
+    protected int credits;
+    protected int studentsEnrolled;
+
+    //setting values costrctor bana kr
+    public Course( String courseName,int credits, int studentsEnrolled) {
+        this.courseName = courseName;
+        this.credits = credits;
+        this.studentsEnrolled = studentsEnrolled;
+    }
+//toSting is used to sout any thingg
+    @Override
+    public String toString(){
+        return "Course Name:"+ courseName+
+                "\n Credits"+credits+"\nStudendsEnrolled:"+ studentsEnrolled;
+    }
+}
+
+
+class TheoryCourse extends Course{
+    private int numberOfLectures;
+
+    // Constructor
+    public TheoryCourse(String courseName, int credits, int studentsEnrolled, int numberOfLectures) {
+        super(courseName, credits, studentsEnrolled);
+        this.numberOfLectures = numberOfLectures;
+    }
+
+    // Overriding toString to include lecture details
+    @Override
+    public String toString() {
+        return super.toString() + "\n Number of Lectures: " + numberOfLectures;
+    }
+}
+
+// Subclass for Lab Courses
+class LabCourse extends Course {
+    private int labHoursPerWeek;
+
+    // Constructor
+    public LabCourse(String courseName, int credits, int studentsEnrolled, int labHoursPerWeek) {
+        super(courseName, credits, studentsEnrolled);
+        this.labHoursPerWeek = labHoursPerWeek;
+    }
+
+    // Overriding toString to include lab hours details
+    @Override
+    public String toString() {
+        return super.toString() + "\n Lab Hours per Week: " + labHoursPerWeek;
+    }
+}
+
+// Class to manage courses
+class CourseManager {
+    private ArrayList<Course> courses;
+
+    // Constructor
+    public CourseManager() {
+        courses = new ArrayList<>();
+    }
+
+    // Overloaded method to add a TheoryCourse
+    public void addCourse(TheoryCourse course) {
+        courses.add(course);
+        System.out.println("\nTheory course added: " + course.toString());
+    }
+
+    // Overloaded method to add a LabCourse
+    public void addCourse(LabCourse course) {
+        courses.add(course);
+        System.out.println("\nLab course added: " + course.toString());
+    }
+
+    //  total students enrolled across all courses
+    public int calculateTotalStudentsEnrolled() {
+
+        int total = 0;
+        for (Course course : courses) {
+            total = total +  course.studentsEnrolled;
+        }
+        return total;
+    }
+
+    // displaying All coursesss
+    public void displayAllCourses() {
+        for (Course course : courses) {
+            System.out.println(course.toString());
+        }
+    }
+}
+
+// Main classssssss
+public class CourseManagementSystem {
+    public static void main(String[] args) {
+        //object making
+        CourseManager manager = new CourseManager();
+
+        // Theory + Lab courses adding data Z
+        TheoryCourse theoryCourse = new TheoryCourse("Data Structures", 3, 50, 30);
+        LabCourse labCourse = new LabCourse("Physics Lab", 2, 25, 4);
+
+        manager.addCourse(theoryCourse);
+        manager.addCourse(labCourse);
+
+        // Printing all courses
+        System.out.println("\n The all Courses are :");
+        manager.displayAllCourses();
+
+        //total students enrolled
+        int totalStudents = manager.calculateTotalStudentsEnrolled();
+        System.out.println("\n The total students enrolled across all courses : " + totalStudents);
+    }
+}
+
+
+
+
+
+
+
+SECOND ONE
+
+            // Base class for books
+class Book {
+    private String title;
+    private String author;
+    private int year;
+    private int availableCopies;
+    private double price;
+
+    // Constructor to initialize book details
+    public Book(String title, String author, int year, int availableCopies, double price) {
+        this.title = title;
+        this.author = author;
+        this.year = year;
+        this.availableCopies = availableCopies;
+        this.price = price;
+    }
+
+    // Getters and Setters
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public int getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    // Method to borrow a book, reducing available copies
+    public boolean borrowBook() {
+        if (availableCopies > 0) {
+            availableCopies--;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Method to return a book, increasing available copies
+    public void returnBook() {
+        availableCopies++;
+    }
+}
+
+// Fiction subclass inheriting from Book
+class Fiction extends Book {
+    public Fiction(String title, String author, int year, int availableCopies, double price) {
+        super(title, author, year, availableCopies, price);
+    }
+}
+
+// NonFiction subclass inheriting from Book
+class NonFiction extends Book {
+    public NonFiction(String title, String author, int year, int availableCopies, double price) {
+        super(title, author, year, availableCopies, price);
+    }
+}
+
+// Library class to manage multiple books
+class Library {
+    private Book[] books;
+    private int bookCount;
+
+    public Library(int maxBooks) {
+        books = new Book[maxBooks];
+        bookCount = 0;
+    }
+
+    // Method to add a book to the library
+    public void addBook(Book book) {
+        if (bookCount < books.length) {
+            books[bookCount] = book;
+            bookCount++;
+        } else {
+            System.out.println("Library is full. Cannot add more books.");
+        }
+    }
+
+    // Method to calculate the total price of all books in the library
+    public double calculateTotalPrice() {
+        double totalPrice = 0;
+        for (int i = 0; i < bookCount; i++) {
+            totalPrice += books[i].getPrice();
+        }
+        return totalPrice;
+    }
+}
+
+// Main class to test the library system
+public class Main {
+    public static void main(String[] args) {
+        // Create library with a maximum capacity of 10 books
+        Library library = new Library(10);
+
+        // Add different books to the library
+        Fiction fictionBook = new Fiction("The Great Gatsby", "F. Scott Fitzgerald", 1925, 5, 10.99);
+        NonFiction nonFictionBook = new NonFiction("Sapiens", "Yuval Noah Harari", 2011, 3, 15.99);
+
+        library.addBook(fictionBook);
+        library.addBook(nonFictionBook);
+
+        // Display total price of all books in the library
+        System.out.println("Total price of all books in the library: $" + library.calculateTotalPrice());
+
+        // Borrow a book
+        if (fictionBook.borrowBook()) {
+            System.out.println("Borrowed " + fictionBook.getTitle() + " successfully.");
+        } else {
+            System.out.println("No copies left for " + fictionBook.getTitle() + ".");
+        }
+
+        // Return a book
+        fictionBook.returnBook();
+        System.out.println("Returned " + fictionBook.getTitle() + ".");
+
+        // Display updated total price
+        System.out.println("Updated total price of all books in the library:Rs." + library.calculateTotalPrice());
+    }
+}

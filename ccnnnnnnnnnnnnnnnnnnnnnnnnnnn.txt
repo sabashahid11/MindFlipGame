@@ -1,0 +1,43 @@
+Server Location:
+
+The server should be placed in the same VLAN as the department that primarily uses it (e.g., VLAN 10 for Store).
+
+If it’s shared across all departments, connect it to a separate VLAN (e.g., VLAN 40 for Servers) and configure inter-VLAN routing.
+
+Why Not Connect Directly to the Router?
+Best Practice: Servers belong on the LAN (switch), not the router.
+
+Router Ports Are Limited: Routers have few ports; switches handle multiple devices better.
+
+VLAN Flexibility: A switch lets you assign the server to any VLAN.
+
+Why This Matters for Your Network
+Isolation
+
+PCs in Store (VLAN 10) cannot accidentally access files in Accounts (VLAN 20) unless you explicitly allow it (via router ACLs).
+
+Security
+
+If a virus infects PC1 (Store), it won’t spread to PCs in other VLANs.
+
+Controlled Communication
+
+Departments can only interact through the router (e.g., Accounts needs approval to access Purchase data).
+
+Example Scenario
+PC1 (Store, VLAN 10) tries to ping PC3 (Accounts, VLAN 20) → Fails (blocked by VLAN separation).
+
+PC1 pings PC2 (same VLAN) → Succeeds (they’re in the same "virtual network").
+
+Key Configuration Summary
+Switch Ports are assigned to VLANs (e.g., Port 2-3 → VLAN 10 for Store).
+
+Router acts as a "gatekeeper" between VLANs (using subinterfaces like G0/0.10, G0/0.20).
+
+Need a visual? Imagine your switch is an office building, and VLANs are locked floors:
+
+Store team (VLAN 10) can’t enter Accounts (VLAN 20) without a key (router permission).
+
+Would you like a Packet Tracer screenshot showing this flow? 🖥️
+
+New chat

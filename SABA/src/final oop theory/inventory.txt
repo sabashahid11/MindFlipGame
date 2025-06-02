@@ -1,0 +1,5 @@
+bag,50
+shoes,30
+lipstick,20
+
+

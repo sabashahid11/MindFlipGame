@@ -1,0 +1,32 @@
+Customer Name: sabah
+Item: bag
+Quantity: 1
+---------------
+Customer Name: sabah
+Item: lipstick
+Quantity: 1
+---------------
+Customer Name: ali
+Item: bag
+Quantity: 2
+---------------
+Customer Name: abdullah
+Item: hat
+Quantity: 4
+---------------
+Customer Name: saad
+Item: shoes
+Quantity: 4
+---------------
+Customer Name: saad
+Item: bag
+Quantity: 4
+---------------
+Customer Name: soha
+Item: shoes
+Quantity: 1
+---------------
+Customer Name: soha
+Item: bag
+Quantity: 2
+---------------

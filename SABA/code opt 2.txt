@@ -1,0 +1,180 @@
+// Main system classes for the E-Commerce Order Management System
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+// ===================== Product Class =====================
+class Product {
+    private int productId;
+    private String name;
+    private double price;
+    private int stock;
+
+    public Product(int productId, String name, double price, int stock) {
+        this.productId = productId;
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void reduceStock(int quantity) throws Exception {
+        if (quantity > stock) {
+            throw new Exception("Insufficient stock for " + name);
+        }
+        stock -= quantity;
+    }
+
+    public void restoreStock(int quantity) {
+        stock += quantity;
+    }
+}
+
+// ===================== Customer Class =====================
+class Customer {
+    private int customerId;
+    private String name;
+    private String email;
+
+    public Customer(int customerId, String name, String email) {
+        this.customerId = customerId;
+        this.name = name;
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public int getCustomerId() {
+        return customerId;
+    }
+}
+
+// ===================== Order Class =====================
+class Order {
+    private int orderId;
+    private Customer customer;
+    private List<Product> products;
+    private Map<Product, Integer> productQuantities;
+    private double totalPrice;
+    private String status; // e.g., "Pending", "Completed", "Cancelled"
+
+    public Order(int orderId, Customer customer) {
+        this.orderId = orderId;
+        this.customer = customer;
+        this.products = new ArrayList<>();
+        this.productQuantities = new HashMap<>();
+        this.totalPrice = 0.0;
+        this.status = "Pending";
+    }
+
+    public void addProduct(Product product, int quantity) throws Exception {
+        if (quantity <= 0) {
+            throw new Exception("Quantity must be greater than zero.");
+        }
+        if (product.getStock() < quantity) {
+            throw new Exception("Product out of stock: " + product.getName());
+        }
+        product.reduceStock(quantity);
+        productQuantities.put(product, productQuantities.getOrDefault(product, 0) + quantity);
+        if (!products.contains(product)) {
+            products.add(product);
+        }
+        totalPrice += product.getPrice() * quantity;
+    }
+
+    public void cancelOrder() {
+        for (Product product : products) {
+            int quantity = productQuantities.get(product);
+            product.restoreStock(quantity);
+        }
+        products.clear();
+        productQuantities.clear();
+        totalPrice = 0.0;
+        this.status = "Cancelled";
+    }
+
+    public double calculateTotalPrice() {
+        return totalPrice;
+    }
+
+    public String generateInvoice() {
+        StringBuilder invoice = new StringBuilder("Invoice:\n");
+        invoice.append("Order ID: ").append(orderId).append("\n");
+        invoice.append("Customer: ").append(customer.getName()).append("\n");
+        invoice.append("Products:\n");
+        for (Product product : products) {
+            int quantity = productQuantities.get(product);
+            invoice.append("- ").append(product.getName())
+                    .append(" | Quantity: ").append(quantity)
+                    .append(" | Price: ").append(product.getPrice())
+                    .append("\n");
+        }
+        invoice.append("Total Price: ").append(totalPrice).append("\n");
+        return invoice.toString();
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+}
+
+// ===================== Logger Class =====================
+class Logger {
+    public static void log(String message) {
+        System.out.println("[" + LocalDateTime.now() + "] " + message);
+    }
+}
+
+// ===================== Main Class =====================
+public class ECommerceSystem {
+    public static void main(String[] args) {
+        try {
+            // Sample products
+            Product product1 = new Product(1, "Laptop", 1000.0, 10);
+            Product product2 = new Product(2, "Mouse", 50.0, 20);
+
+            // Sample customer
+            Customer customer = new Customer(1, "John Doe", "john@example.com");
+
+            // Creating an order
+            Order order = new Order(1, customer);
+            order.addProduct(product1, 2); // Adding 2 laptops
+            order.addProduct(product2, 5); // Adding 5 mice
+
+            // Logging the order details
+            Logger.log("Order placed successfully.\n" + order.generateInvoice());
+
+            // Canceling the order (for demonstration)
+            order.cancelOrder();
+            Logger.log("Order cancelled successfully.");
+
+        } catch (Exception e) {
+            Logger.log("Error: " + e.getMessage());
+        }
+    }
+}
